@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket STOMP Example</title>
+
+    <!-- Include SockJS and STOMP JavaScript libraries using CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+
+<body>
+
+<input type="text" id="messageInput" placeholder="Enter your message here">
+<button onclick="sendMessage()">Send</button>
+
+<div id="messages"></div>
+
+<script>
+    var stompClient = null;
+
+    window.onload = function() {
+      
+      // var socket = new SockJS('http://localhost:8080/websocket-endpoint');
+       var socket = new SockJS('http://172.104.149.178:8080/spring-ws-ping-pong/websocket-endpoint');
+
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function(frame) {
+            console.log('Connected: ' + frame);
+
+            // Subscribe to the "/topic/pong" topic to receive messages from the server
+            stompClient.subscribe('/topic/pong', function(messageOutput) {
+                var messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML += "<p>" + messageOutput.body + "</p>";
+            });
+
+            // Automatically send a "Ping" message to the server when page loads
+            // stompClient.send("/app/send/ping", {}, "Ping");
+        });
+    }
+
+    function sendMessage() {
+        var messageContent = document.getElementById('messageInput').value;
+        if (messageContent && stompClient) {
+            stompClient.send("/app/send/ping", {}, messageContent);
+        }
+    }
+</script>
+
+</body>
+
+</html>

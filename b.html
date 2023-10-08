@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <script>
+        var ws;
+
+        function connect() {
+          //  ws = new WebSocket('ws://192.168.0.16:8080/ws/plain');
+	 ws = new WebSocket('ws://172.104.149.178:8080/spring-ws-ping-pong/ws/plain');
+ 
+
+            ws.onopen = function() {
+                console.log('Connected');
+            };
+
+            ws.onmessage = function(event) {
+                var message = event.data;
+                document.getElementById('messages').innerHTML += '<br>' + message;
+            };
+
+            ws.onclose = function() {
+                console.log('Disconnected');
+            };
+        }
+
+        function disconnect() {
+            if (ws != null) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+      function sendMessage() {
+    var message = document.getElementById('message').value;
+    if (ws != null) {
+        ws.send(JSON.stringify({data: message}));
+    }
+}
+
+    </script>
+</head>
+<body onload="connect()">
+    <input type="text" id="message">
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="disconnect()">Disconnect</button>
+    <div id="messages"></div>
+</body>
+</html>
