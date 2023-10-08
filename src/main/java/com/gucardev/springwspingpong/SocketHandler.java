@@ -1,9 +1,7 @@
 package com.gucardev.springwspingpong;
 
-import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 //
 // @ServerEndpoint(value = "/ws/endpoint")
@@ -34,12 +32,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 //    throwable.printStackTrace();
 //  }
 // }
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 @Component
+@Slf4j
 public class SocketHandler extends TextWebSocketHandler {
 
   List<Object> sessions = new CopyOnWriteArrayList<>();
@@ -47,13 +47,13 @@ public class SocketHandler extends TextWebSocketHandler {
   @Override
   public void handleTextMessage(WebSocketSession session, TextMessage message)
       throws InterruptedException, IOException {
-    Map value = new Gson().fromJson(message.getPayload(), Map.class);
-    session.sendMessage(new TextMessage("Message reach to server:  " + value.get("data")));
+    session.sendMessage(new TextMessage(message.getPayload()));
   }
 
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
     // the messages will be broadcasted to all users.
+    log.info("new session connected {}", session.toString());
     sessions.add(session);
   }
 }

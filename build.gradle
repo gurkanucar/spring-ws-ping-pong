@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.gucardev'
-version = '0.0.1-SNAPSHOT'
+version = ''
 
 java {
     sourceCompatibility = '17'
