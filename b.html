@@ -6,20 +6,20 @@
         var ws;
 
         function connect() {
-          //  ws = new WebSocket('ws://192.168.0.16:8080/ws/plain');
-	 ws = new WebSocket('wss://server.gurkanucar.com/spring-ws-ping-pong/ws/plain');
- 
+            //  ws = new WebSocket('ws://192.168.0.16:8080/ws/plain');
+            ws = new WebSocket('wss://server.gurkanucar.com/spring-ws-ping-pong/ws/plain');
 
-            ws.onopen = function() {
+
+            ws.onopen = function () {
                 console.log('Connected');
             };
 
-            ws.onmessage = function(event) {
+            ws.onmessage = function (event) {
                 var message = event.data;
                 document.getElementById('messages').innerHTML += '<br>' + message;
             };
 
-            ws.onclose = function() {
+            ws.onclose = function () {
                 console.log('Disconnected');
             };
         }
@@ -31,19 +31,20 @@
             }
         }
 
-      function sendMessage() {
-    var message = document.getElementById('message').value;
-    if (ws != null) {
-        ws.send(JSON.stringify({data: message}));
-    }
-}
+        function sendMessage() {
+            var message = document.getElementById('message').value;
+            if (ws != null) {
+                ws.send(message);
+                // ws.send(JSON.stringify({data: message}));
+            }
+        }
 
     </script>
 </head>
 <body onload="connect()">
-    <input type="text" id="message">
-    <button onclick="sendMessage()">Send</button>
-    <button onclick="disconnect()">Disconnect</button>
-    <div id="messages"></div>
+<input type="text" id="message">
+<button onclick="sendMessage()">Send</button>
+<button onclick="disconnect()">Disconnect</button>
+<div id="messages"></div>
 </body>
 </html>
