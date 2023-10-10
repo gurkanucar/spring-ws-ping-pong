@@ -1,6 +1,7 @@
 package com.gucardev.springwspingpong;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 //
@@ -43,38 +44,59 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 @Component
 public class SocketHandler extends TextWebSocketHandler {
 
-  List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
+  private List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
 
   @Override
   public void handleTextMessage(WebSocketSession session, TextMessage message)
       throws InterruptedException, IOException {
-    log.info("message: {}", message);
+    log.info("message: {}", message.getPayload());
+    String payload = message.getPayload();
 
-    if (message.getPayload().startsWith("ba-")) {
-      // Broadcast to all
-      for (WebSocketSession webSocketSession : sessions) {
-        webSocketSession.sendMessage(new TextMessage(message.getPayload()));
-      }
-    } else if (message.getPayload().startsWith("bo-")) {
-      // Broadcast to others (exclude current session)
-      for (WebSocketSession webSocketSession : sessions) {
-        if (!webSocketSession.getId().equals(session.getId())) {
-          webSocketSession.sendMessage(new TextMessage(message.getPayload()));
-        }
-      }
+    if (payload.startsWith("ls")) {
+      handleListSessions(session);
+    } else if (payload.startsWith("ba-")) {
+      broadcastMessageToAll(payload);
+    } else if (payload.startsWith("bo-")) {
+      broadcastMessageToOthers(session, payload);
     } else {
-      session.sendMessage(new TextMessage(message.getPayload()));
+      sendBackToSender(session, payload);
     }
   }
 
+  private void handleListSessions(WebSocketSession session) throws IOException {
+    log.info(Arrays.toString(sessions.toArray()));
+    var array = sessions.stream().map(WebSocketSession::getId).toArray();
+    String sessionIds = Arrays.toString(array);
+    session.sendMessage(new TextMessage("clients: %d | %s".formatted(array.length, sessionIds)));
+  }
+
+  private void broadcastMessageToAll(String message) throws IOException {
+    for (WebSocketSession webSocketSession : sessions) {
+      webSocketSession.sendMessage(new TextMessage(message));
+    }
+  }
+
+  private void broadcastMessageToOthers(WebSocketSession sender, String message)
+      throws IOException {
+    for (WebSocketSession webSocketSession : sessions) {
+      if (!webSocketSession.getId().equals(sender.getId())) {
+        webSocketSession.sendMessage(new TextMessage(message));
+      }
+    }
+  }
+
+  private void sendBackToSender(WebSocketSession session, String message) throws IOException {
+    session.sendMessage(new TextMessage(message));
+  }
+
   @Override
-  public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+  public void afterConnectionEstablished(WebSocketSession session) {
     log.info("new session connected {}", session.toString());
     sessions.add(session);
   }
 
   @Override
-  public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+  public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
     sessions.remove(session);
   }
 }
